@@ -32,6 +32,9 @@ dist-ssr
 *.sw?
 .claude/settings.local.json
 
-# bun.lock pins a registry URL that isn't reachable from Cloudflare's build;
-# using npm's package-lock.json instead
+# bun.lock pins a registry URL that isn't reachable from Cloudflare's build.
+# package-lock.json is also excluded: generated on Windows, it misses some
+# Linux-only optional-dependency entries, which breaks Cloudflare's `npm ci`.
+# Let Cloudflare run a fresh `npm install` instead.
 bun.lock
+package-lock.json
