@@ -24,14 +24,14 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
-.claude/settings.local.json
-
-# bun.lock pins an older @lovable.dev/vite-tanstack-config that doesn't
-# produce .output for Cloudflare deploys; using npm's package-lock.json instead
-bun.lock
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.claude/settings.local.json
+
+# bun.lock pins a registry URL that isn't reachable from Cloudflare's build;
+# using npm's package-lock.json instead
+bun.lock

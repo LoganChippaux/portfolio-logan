@@ -1,33 +1,36 @@
 // ─────────────────────────────────────────────────────────────────
-// 👋 COMMENT PERSONNALISER TON PORTFOLIO (lis-moi !)
+// 👋 HOW TO CUSTOMIZE YOUR PORTFOLIO (read me!)
 // ─────────────────────────────────────────────────────────────────
-// 1) TON NOM / PSEUDO        → cherche "PLAYER ONE" plus bas et remplace.
-// 2) TON SOUS-TITRE          → "A FULL-STACK ADVENTURER".
-// 3) TON PITCH               → le gros paragraphe "I build delightful...".
-// 4) TES STATS HUD           → modifie le tableau STATS (LVL / XP / HP / GOLD).
-// 5) TES PROJETS             → modifie le tableau QUESTS (title, role, desc, tags, rarity).
-// 6) TES COMPÉTENCES         → modifie le tableau SKILLS (name + lvl 0-100).
-// 7) SECTION "BOSS / ABOUT"  → modifie les 2 paragraphes et les stats (QUESTS/YEARS/COMBO).
-// 8) CONTACT                 → change "mailto:player1@arcade.dev" et les liens GitHub/LinkedIn.
-// 9) META / SEO              → en haut: title, description (apparaît sur Google/partages).
-// 10) MINI-JEU               → src/components/CoinCatcher.tsx (logique du jeu).
-// 11) EASTER EGG             → tape ↑ ↑ ↓ ↓ ← → ← → B A (code Konami) n'importe où.
+// 1) YOUR NAME / HANDLE         → search for "PLAYER ONE" below and replace.
+// 2) YOUR SUBTITLE              → edit the hero subtitle in src/lib/i18n.tsx.
+// 3) YOUR PITCH                 → edit the hero pitch in src/lib/i18n.tsx.
+// 4) YOUR HUD STATS             → edit the STATS array (LVL / XP / HP / GOLD).
+// 5) YOUR PROJECTS              → edit the QUESTS array in src/lib/quests.ts.
+// 6) YOUR SKILLS                → edit the SKILLS array (name + lvl 0-100).
+// 7) "BOSS / ABOUT" SECTION     → edit the paragraphs and stats in src/lib/i18n.tsx.
+// 8) CONTACT                    → change the mailto and GitHub/LinkedIn links below.
+// 9) META / SEO                 → at the top: title, description (shown on Google/shares).
+// 10) MINI-GAME                 → src/components/CoinCatcher.tsx (game logic).
+// 11) EASTER EGG                → type ↑ ↑ ↓ ↓ ← → ← → B A (Konami code) anywhere.
+// 12) LANGUAGES                 → all texts live in src/lib/i18n.tsx (en + fr).
 // ─────────────────────────────────────────────────────────────────
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CoinCatcher } from "@/components/CoinCatcher";
 import { KonamiEasterEgg } from "@/components/KonamiEasterEgg";
 import { ArcadeBackground } from "@/components/ArcadeBackground";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/lib/i18n";
 import { sfx, music } from "@/lib/arcadeSound";
-import { QUESTS } from "@/lib/quests";
+import { localizeQuest, QUESTS } from "@/lib/quests";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "PLAYER ONE // Arcade Portfolio" },
-      { name: "description", content: "An 8-bit arcade-themed personal portfolio. Insert coin to continue." },
-      { property: "og:title", content: "PLAYER ONE // Arcade Portfolio" },
-      { property: "og:description", content: "An 8-bit arcade-themed personal portfolio. Insert coin to continue." },
+      { title: "PLAYER ONE // Video Game Developer Portfolio" },
+      { name: "description", content: "Arcade-themed portfolio of a video game developer. Insert coin to continue." },
+      { property: "og:title", content: "PLAYER ONE // Video Game Developer Portfolio" },
+      { property: "og:description", content: "Arcade-themed portfolio of a video game developer. Insert coin to continue." },
     ],
   }),
   component: Index,
@@ -48,8 +51,17 @@ const SKILLS = [
   { name: "PYTHON", lvl: 50 },
 ];
 
+const MARQUEE_KEYS = [
+  "marquee.newHighScore",
+  "marquee.shippingSince",
+  "marquee.openToQuests",
+  "marquee.coffeeToCode",
+  "marquee.1upAvailable",
+  "marquee.readyPlayerOne",
+] as const;
 
 function Index() {
+  const { t, lang } = useLanguage();
   const [coins, setCoins] = useState(3);
   const [score, setScore] = useState(0);
   const [musicOn, setMusicOn] = useState(false);
@@ -59,8 +71,8 @@ function Index() {
     return () => clearInterval(id);
   }, []);
 
-  // 🔊 Sons d'arcade globaux : clic sur n'importe quel bouton/lien.
-  // Pour DÉSACTIVER, supprime ce useEffect.
+  // 🔊 Global arcade sounds: click on any button/link.
+  // To DISABLE, remove this useEffect.
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const el = (e.target as HTMLElement)?.closest("a, button");
@@ -85,6 +97,9 @@ function Index() {
 
   const toggleMusic = () => setMusicOn(music.toggle());
 
+  const rarityLabel = (r: string) =>
+    r === "LEGENDARY" ? t("rarity.legendary") : r === "EPIC" ? t("rarity.epic") : t("rarity.rare");
+
   return (
     <main className="relative min-h-screen overflow-x-hidden text-arcade">
       <ArcadeBackground />
@@ -93,28 +108,33 @@ function Index() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-3">
             <CoinIcon />
-            <span className="text-pixel text-xs neon-yellow">CREDITS × {coins}</span>
+            <span className="text-pixel text-xs neon-yellow">
+              {t("header.credits")} × {coins}
+            </span>
           </div>
           <nav className="hidden gap-6 text-pixel text-[10px] md:flex">
-            <a href="#quests" className="neon-cyan hover:neon-pink">QUESTS</a>
-            <a href="#skills" className="neon-cyan hover:neon-pink">SKILLS</a>
-            <a href="#arcade" className="neon-cyan hover:neon-pink">ARCADE</a>
-            <a href="#boss" className="neon-cyan hover:neon-pink">BOSS</a>
-            <a href="#contact" className="neon-cyan hover:neon-pink">CONTACT</a>
+            <a href="#quests" className="neon-cyan hover:neon-pink">{t("nav.quests")}</a>
+            <a href="#skills" className="neon-cyan hover:neon-pink">{t("nav.skills")}</a>
+            <a href="#arcade" className="neon-cyan hover:neon-pink">{t("nav.arcade")}</a>
+            <a href="#boss" className="neon-cyan hover:neon-pink">{t("nav.boss")}</a>
+            <a href="#contact" className="neon-cyan hover:neon-pink">{t("nav.contact")}</a>
           </nav>
           <div className="flex items-center gap-3">
+            <LanguageToggle />
             <button
               onClick={toggleMusic}
-              title={musicOn ? "Couper la musique" : "Lancer le thème"}
+              title={musicOn ? t("music.stop") : t("music.play")}
               className={`text-pixel text-[10px] border-2 px-2 py-1 ${
                 musicOn
                   ? "border-[color:var(--neon-green)] neon-green"
                   : "border-[color:var(--neon-purple)] text-muted-foreground"
               }`}
             >
-              {musicOn ? "♪ BGM ON" : "♪ BGM OFF"}
+              {musicOn ? t("music.on") : t("music.off")}
             </button>
-            <div className="text-pixel text-[10px] neon-green">SCORE {score.toString().padStart(6, "0")}</div>
+            <div className="text-pixel text-[10px] neon-green">
+              {`${t("header.score")} ${score.toString().padStart(6, "0")}`}
+            </div>
           </div>
         </div>
       </header>
@@ -124,16 +144,15 @@ function Index() {
         <div className="mx-auto max-w-5xl">
           <div className="relative arcade-border scanlines crt-vignette overflow-hidden rounded-md bg-[color:var(--card)] p-8 md:p-14">
             <div className="relative z-10 text-center">
-              <p className="text-pixel text-[10px] neon-cyan blink">★ INSERT COIN ★</p>
+              <p className="text-pixel text-[10px] neon-cyan blink">{t("hero.insertCoin")}</p>
               <h1 className="mt-6 text-pixel text-3xl leading-tight neon-pink md:text-6xl">
                 PLAYER&nbsp;ONE
               </h1>
               <p className="mt-4 text-pixel text-xs neon-yellow md:text-base flicker">
-                A FULL-STACK ADVENTURER
+                {t("hero.subtitle")}
               </p>
               <p className="mx-auto mt-8 max-w-xl text-lg leading-snug text-foreground/90 md:text-xl">
-                I build delightful web experiences with a side-quest of pixel art and
-                synthwave soundtracks. Press START to view my quests.
+                {t("hero.pitch")}
               </p>
 
               <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -142,13 +161,13 @@ function Index() {
                   onClick={() => { sfx.start(); setCoins((c) => Math.max(0, c - 1)); }}
                   className="text-pixel text-xs bg-[color:var(--neon-pink)] px-6 py-4 text-[color:var(--primary-foreground)] shadow-[0_6px_0_0_rgba(0,0,0,0.6)] transition-transform hover:translate-y-[2px] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.6)]"
                 >
-                  ▶ PRESS START
+                  ▶ {t("hero.pressStart")}
                 </a>
                 <a
                   href="#contact"
                   className="text-pixel text-xs border-2 border-[color:var(--neon-cyan)] px-6 py-4 neon-cyan hover:bg-[color:var(--neon-cyan)] hover:text-[color:var(--primary-foreground)] hover:[text-shadow:none]"
                 >
-                  HIGH SCORE? HIRE ME
+                  {t("hero.hireMe")}
                 </a>
               </div>
 
@@ -168,12 +187,9 @@ function Index() {
             <div className="marquee-track flex w-max gap-12 text-pixel text-[10px] neon-yellow">
               {Array.from({ length: 2 }).map((_, i) => (
                 <div key={i} className="flex shrink-0 gap-12 pr-12">
-                  <span>★ NEW HIGH SCORE</span>
-                  <span>★ SHIPPING SINCE 2017</span>
-                  <span>★ OPEN TO QUESTS</span>
-                  <span>★ COFFEE → CODE</span>
-                  <span>★ 1UP AVAILABLE</span>
-                  <span>★ READY PLAYER ONE</span>
+                  {MARQUEE_KEYS.map((key) => (
+                    <span key={key}>★ {t(key)}</span>
+                  ))}
                 </div>
               ))}
             </div>
@@ -184,50 +200,52 @@ function Index() {
       {/* QUESTS / PROJECTS */}
       <section id="quests" className="px-4 py-16">
         <div className="mx-auto max-w-6xl">
-          <SectionTitle eyebrow="WORLD 1-1" title="SELECT YOUR QUEST" color="neon-pink" />
+          <SectionTitle eyebrow={t("quests.eyebrow")} title={t("quests.title")} color="neon-pink" />
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {QUESTS.map((q) => (
-              <Link
-                key={q.slug}
-                to="/quest/$slug"
-                params={{ slug: q.slug }}
-                className="group relative flex flex-col border-2 border-[color:var(--border)] bg-[color:var(--card)] p-5 transition-transform hover:-translate-y-1 hover:border-[color:var(--neon-pink)]"
-              >
-                <div className={`text-pixel text-[9px] ${q.color}`}>{q.rarity}</div>
-                <h3 className={`mt-3 text-pixel text-sm ${q.color}`}>{q.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{q.role}</p>
-                <p className="mt-4 text-base leading-snug text-foreground/90">{q.desc}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {q.tags.map((t) => (
-                    <span key={t} className="text-pixel text-[9px] border border-[color:var(--neon-cyan)] px-2 py-1 neon-cyan">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-6 text-pixel text-[10px] neon-yellow opacity-0 transition-opacity group-hover:opacity-100">
-                  ▶ ENTER STAGE
-                </div>
-              </Link>
-            ))}
+            {QUESTS.map((q) => {
+              const l = localizeQuest(q, lang);
+              return (
+                <Link
+                  key={q.slug}
+                  to="/quest/$slug"
+                  params={{ slug: q.slug }}
+                  className="group relative flex flex-col border-2 border-[color:var(--border)] bg-[color:var(--card)] p-5 transition-transform hover:-translate-y-1 hover:border-[color:var(--neon-pink)]"
+                >
+                  <div className={`text-pixel text-[9px] ${q.color}`}>{rarityLabel(q.rarity)}</div>
+                  <h3 className={`mt-3 text-pixel text-sm ${q.color}`}>{l.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{l.role}</p>
+                  <p className="mt-4 text-base leading-snug text-foreground/90">{l.desc}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {q.tags.map((tag) => (
+                      <span key={tag} className="text-pixel text-[9px] border border-[color:var(--neon-cyan)] px-2 py-1 neon-cyan">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-6 text-pixel text-[10px] neon-yellow opacity-0 transition-opacity group-hover:opacity-100">
+                    ▶ {t("quests.enterStage")}
+                  </div>
+                </Link>
+              );
+            })}
 
-            {/* ➕ EMPTY SLOT — "insert cartridge" visual to add a new project.
-                To add a project: edit src/lib/quests.ts and copy an object from the QUESTS array. */}
+            {/* ➕ EMPTY SLOT — visual hint for a future project. */}
             <a
               href="https://github.com/"
               target="_blank"
               rel="noreferrer"
               className="group relative flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[color:var(--neon-cyan)]/50 bg-[color:var(--card)]/40 p-5 min-h-[260px] transition-all hover:border-[color:var(--neon-pink)] hover:bg-[color:var(--card)] hover:-translate-y-1"
             >
-              <div className="text-pixel text-[9px] neon-cyan opacity-70">COMING SOON</div>
+              <div className="text-pixel text-[9px] neon-cyan opacity-70">{t("emptySlot.comingSoon")}</div>
               <div className="relative flex h-20 w-20 items-center justify-center border-2 border-[color:var(--neon-cyan)] text-pixel text-3xl neon-cyan transition-all group-hover:border-[color:var(--neon-pink)] group-hover:neon-pink group-hover:rotate-90">
                 ?
                 <span className="absolute inset-0 animate-ping border-2 border-[color:var(--neon-pink)] opacity-0 group-hover:opacity-40" />
               </div>
               <div className="text-pixel text-[10px] neon-yellow text-center">
-                IN PROGRESS
+                {t("emptySlot.inProgress")}
               </div>
               <p className="text-center text-xs text-muted-foreground max-w-[200px]">
-                New project coming soon
+                {t("emptySlot.description")}
               </p>
               {/* Mini animated cartridge */}
               <div className="mt-1 flex gap-1">
@@ -243,7 +261,7 @@ function Index() {
       {/* SKILLS */}
       <section id="skills" className="px-4 py-16">
         <div className="mx-auto max-w-4xl">
-          <SectionTitle eyebrow="POWER-UPS" title="SKILL TREE" color="neon-cyan" />
+          <SectionTitle eyebrow={t("skills.eyebrow")} title={t("skills.title")} color="neon-cyan" />
           <div className="mt-10 space-y-5">
             {SKILLS.map((s) => (
               <div key={s.name}>
@@ -271,21 +289,21 @@ function Index() {
       {/* ARCADE / MINI-GAME */}
       <section id="arcade" className="px-4 py-16">
         <div className="mx-auto max-w-3xl">
-          <SectionTitle eyebrow="BONUS STAGE" title="MINI-JEU : COIN CATCHER" color="neon-green" />
+          <SectionTitle eyebrow={t("arcade.eyebrow")} title={t("arcade.title")} color="neon-green" />
           <p className="mt-4 text-center text-base text-foreground/80">
-            Bouge ta souris pour déplacer la barre verte. 30 secondes pour faire un max de points.
+            {t("arcade.description")}
           </p>
           <div className="mt-8 arcade-border bg-[color:var(--card)] p-4">
             <CoinCatcher />
           </div>
           <p className="mt-4 text-center text-pixel text-[10px] neon-yellow">
-            ★ ASTUCE : tape{" "}
+            ★ {t("arcade.tipPrefix")}{" "}
             <span className="inline-flex items-center gap-[2px] align-middle">
               {["↑","↑","↓","↓","←","→","←","→"].map((g, i) => (
                 <span key={i} className="inline-block w-3 text-center">{g}</span>
               ))}
             </span>{" "}
-            B A pour vies illimitées ★
+            {t("arcade.tipSuffix")} ★
           </p>
         </div>
       </section>
@@ -293,32 +311,29 @@ function Index() {
       {/* BOSS / ABOUT */}
       <section id="boss" className="px-4 py-16">
         <div className="mx-auto max-w-5xl">
-          <SectionTitle eyebrow="FINAL STAGE" title="THE BOSS FIGHT" color="neon-yellow" />
+          <SectionTitle eyebrow={t("boss.eyebrow")} title={t("boss.title")} color="neon-yellow" />
           <div className="mt-10 grid gap-8 md:grid-cols-[1fr_1.4fr] md:items-center">
             <div className="relative arcade-border-yellow scanlines aspect-square overflow-hidden bg-[color:var(--card)]">
               <PixelAvatar />
             </div>
             <div>
-              <h3 className="text-pixel text-base neon-pink">ABOUT THE HERO</h3>
+              <h3 className="text-pixel text-base neon-pink">{t("boss.about")}</h3>
               <p className="mt-4 text-lg leading-relaxed text-foreground/90">
-                I'm a developer-designer from Lyon who treats every project like a level worth
-                perfecting. I love clean code, crisp pixels, and that satisfying
-                <span className="neon-green"> coin-pickup </span> moment when a mechanic
-                finally <em>clicks</em>.
+                {t("boss.p1.before")}
+                <span className="neon-green"> {t("boss.p1.highlight")} </span>
+                {t("boss.p1.after")} <em>{t("boss.p1.em")}</em>.
               </p>
               <p className="mt-4 text-lg leading-relaxed text-foreground/90">
-                From scripted gameplay in Unreal Engine 5 and Unity to full systems built from
-                scratch in C++, I ship experiences that feel as good to play as they look.
+                {t("boss.p2")}
               </p>
               <p className="mt-4 text-lg leading-relaxed text-foreground/90">
-                When I'm offline you'll find me cheering for PSG, chasing high scores, playing
-                video games, and watching movies.
+                {t("boss.p3")}
               </p>
               <div className="mt-6 grid grid-cols-3 gap-3 text-center">
                 {[
-                  { k: "QUESTS", v: "15+" },
-                  { k: "YEARS", v: "4" },
-                  { k: "COMBO", v: "x99" },
+                  { k: t("boss.stat.quests"), v: "15+" },
+                  { k: t("boss.stat.years"), v: "4" },
+                  { k: t("boss.stat.combo"), v: "x99" },
                 ].map((b) => (
                   <div key={b.k} className="border-2 border-[color:var(--border)] bg-[color:var(--card)] p-3">
                     <div className="text-pixel text-2xl neon-cyan">{b.v}</div>
@@ -334,16 +349,16 @@ function Index() {
       {/* CONTACT */}
       <section id="contact" className="px-4 py-20">
         <div className="mx-auto max-w-3xl text-center">
-          <SectionTitle eyebrow="GAME OVER?" title="CONTINUE? Y / N" color="neon-green" center />
+          <SectionTitle eyebrow={t("contact.eyebrow")} title={t("contact.title")} color="neon-green" center />
           <p className="mx-auto mt-6 max-w-xl text-lg text-foreground/90">
-            Got a quest for me? Drop a message and I'll spawn back in within 24 hours.
+            {t("contact.pitch")}
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <a
               href="mailto:chippauxlogan@gmail.com"
               className="text-pixel text-xs bg-[color:var(--neon-green)] px-6 py-4 text-[color:var(--primary-foreground)] shadow-[0_6px_0_0_rgba(0,0,0,0.6)] hover:translate-y-[2px] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.6)] transition-transform"
             >
-              ✉ SEND TRANSMISSION
+              ✉ {t("contact.send")}
             </a>
             <a
               href="https://github.com/LoganChippaux"
@@ -351,7 +366,7 @@ function Index() {
               rel="noreferrer"
               className="text-pixel text-xs border-2 border-[color:var(--neon-pink)] px-6 py-4 neon-pink hover:bg-[color:var(--neon-pink)] hover:text-[color:var(--primary-foreground)] hover:[text-shadow:none]"
             >
-              ↗ GITHUB
+              ↗ {t("contact.github")}
             </a>
             <a
               href="https://www.linkedin.com/in/chippaux-logan-52ba63298/"
@@ -359,11 +374,11 @@ function Index() {
               rel="noreferrer"
               className="text-pixel text-xs border-2 border-[color:var(--neon-cyan)] px-6 py-4 neon-cyan hover:bg-[color:var(--neon-cyan)] hover:text-[color:var(--primary-foreground)] hover:[text-shadow:none]"
             >
-              ↗ LINKEDIN
+              ↗ {t("contact.linkedin")}
             </a>
           </div>
           <p className="mt-16 text-pixel text-[10px] text-muted-foreground">
-            © 2026 PLAYER ONE — ALL RIGHTS RESERVED — <span className="blink">_</span>
+            {t("footer.copyright")} <span className="blink">_</span>
           </p>
         </div>
       </section>

@@ -1,3 +1,4 @@
+import { useLanguage } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
 const CODE = [
@@ -7,6 +8,7 @@ const CODE = [
 ];
 
 export function KonamiEasterEgg() {
+  const { t } = useLanguage();
   const [active, setActive] = useState(false);
   const [buf, setBuf] = useState<string[]>([]);
 
@@ -32,7 +34,7 @@ export function KonamiEasterEgg() {
   if (!active) return null;
   return (
     <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center">
-      <div className="text-pixel text-3xl neon-yellow blink">★ ∞ LIVES UNLOCKED ★</div>
+      <div className="text-pixel text-3xl neon-yellow blink">{t("konami.unlocked")}</div>
       {Array.from({ length: 24 }).map((_, i) => (
         <span
           key={i}

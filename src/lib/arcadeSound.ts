@@ -1,6 +1,6 @@
-// Sons d'arcade générés en direct (Web Audio API) — aucune dépendance ni fichier.
-// Utilisation : sfx.click(), sfx.coin(), sfx.start(), sfx.hover(), sfx.powerup()
-//               music.toggle()  // joue/coupe le main theme
+// Arcade sounds generated live (Web Audio API) — no dependency or file needed.
+// Usage: sfx.click(), sfx.coin(), sfx.start(), sfx.hover(), sfx.powerup()
+//        music.toggle()  // plays/stops the main theme
 
 let ctx: AudioContext | null = null;
 function getCtx(): AudioContext | null {
@@ -77,10 +77,10 @@ export const sfx = {
 };
 
 // ────────────────────────────────────────────────────────────────
-// MAIN THEME — boucle chiptune (mélodie + basse)
+// MAIN THEME — looping chiptune (melody + bass)
 // ────────────────────────────────────────────────────────────────
-// Pour CHANGER LA MÉLODIE : remplace les notes ci-dessous.
-// Chaque entrée = fréquence en Hz (0 = silence). Tempo en BPM.
+// To CHANGE THE MELODY: replace the notes below.
+// Each entry = frequency in Hz (0 = silence). Tempo in BPM.
 const MELODY = [
   659, 0, 659, 0, 659, 0, 523, 659,
   784, 0, 0, 0, 392, 0, 0, 0,
@@ -104,7 +104,7 @@ class MainTheme {
   start() {
     if (this.playing) return;
     this.playing = true;
-    const stepDur = (60 / BPM / 2) * 1000; // double-croches
+    const stepDur = (60 / BPM / 2) * 1000; // 16th notes
     const tick = () => {
       const m = MELODY[this.step % MELODY.length];
       const b = BASS[this.step % BASS.length];

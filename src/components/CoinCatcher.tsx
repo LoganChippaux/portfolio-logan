@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "@/lib/i18n";
 import { sfx } from "@/lib/arcadeSound";
+import { useEffect, useRef, useState } from "react";
 
 type Coin = { id: number; x: number; y: number; vy: number; kind: "gold" | "bomb" };
 
 export function CoinCatcher() {
+  const { t } = useLanguage();
   const [running, setRunning] = useState(false);
   const [score, setScore] = useState(0);
   const [hi, setHi] = useState(0);
@@ -168,10 +170,10 @@ export function CoinCatcher() {
     <div className="relative">
       {/* HUD */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-pixel text-[10px]">
-        <span className="neon-yellow">SCORE {score.toString().padStart(4, "0")}</span>
+        <span className="neon-yellow">{`${t("coin.score")} ${score.toString().padStart(4, "0")}`}</span>
         <div className="flex items-center gap-1">
           {infinite ? (
-            <span className="neon-green blink">∞ LIVES</span>
+            <span className="neon-green blink">∞ {t("coin.lives")}</span>
           ) : (
             [0, 1, 2].map((i) => (
               <span
@@ -189,7 +191,7 @@ export function CoinCatcher() {
             ))
           )}
         </div>
-        <span className="neon-pink">HI {hi.toString().padStart(4, "0")}</span>
+        <span className="neon-pink">{`${t("coin.hi")} ${hi.toString().padStart(4, "0")}`}</span>
       </div>
 
       <div
@@ -225,12 +227,12 @@ export function CoinCatcher() {
           <div className="absolute inset-0 z-10 grid place-items-center bg-background/80">
             <div className="text-center">
               <p className="text-pixel text-xs neon-pink">
-                {gameOver ? "GAME OVER — NO LIVES" : "COIN CATCHER"}
+                {gameOver ? t("coin.gameOver") : t("coin.start")}
               </p>
               <p className="mt-2 text-sm text-foreground/80">
                 {gameOver
-                  ? "Tu as perdu toutes tes vies ! Réessaie !"
-                  : "Bouge la souris. Attrape les $ dorés, évite les ✖."}
+                  ? t("coin.lost")
+                  : t("coin.instructions")}
               </p>
               <div className="mt-3 flex justify-center gap-2">
                 {[0, 1, 2].map((i) => (
@@ -248,7 +250,7 @@ export function CoinCatcher() {
                 onClick={start}
                 className="mt-5 text-pixel text-xs bg-[color:var(--neon-yellow)] px-5 py-3 text-[color:var(--primary-foreground)] shadow-[0_5px_0_0_rgba(0,0,0,0.6)] hover:translate-y-[2px]"
               >
-                ▶ {gameOver ? "REJOUER" : "INSERT COIN"}
+                ▶ {gameOver ? t("coin.replay") : t("coin.insertCoin")}
               </button>
             </div>
           </div>

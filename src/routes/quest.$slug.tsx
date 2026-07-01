@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { getQuestBySlug, QUESTS } from "@/lib/quests";
+import { useLanguage } from "@/lib/i18n";
+import { getQuestBySlug, localizeQuest, QUESTS } from "@/lib/quests";
 
 export const Route = createFileRoute("/quest/$slug")({
   head: ({ params }) => {
@@ -20,14 +21,17 @@ export const Route = createFileRoute("/quest/$slug")({
     if (!quest) throw notFound();
     return { quest };
   },
-  notFoundComponent: () => (
-    <main className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center">
-      <h1 className="text-pixel text-3xl neon-pink">404 — QUEST NOT FOUND</h1>
-      <Link to="/" className="text-pixel text-xs neon-cyan underline">
-        ← BACK TO TITLE SCREEN
-      </Link>
-    </main>
-  ),
+  notFoundComponent: () => {
+    const { t } = useLanguage();
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center">
+        <h1 className="text-pixel text-3xl neon-pink">{t("quest.notFound")}</h1>
+        <Link to="/" className="text-pixel text-xs neon-cyan underline">
+          ← {t("quest.notFoundBack")}
+        </Link>
+      </main>
+    );
+  },
   component: QuestPage,
 });
 
@@ -38,15 +42,17 @@ const RARITY_BORDER: Record<string, string> = {
   RARE: "border-[color:var(--neon-cyan)] shadow-[0_0_30px_var(--neon-cyan)]",
 };
 
-const RARITY_LABEL: Record<string, string> = {
-  LEGENDARY: "★ ★ ★ ★ ★  LEGENDARY QUEST",
-  EPIC: "★ ★ ★ ★  EPIC QUEST",
-  RARE: "★ ★ ★  RARE QUEST",
-};
-
 function QuestPage() {
+  const { lang, t } = useLanguage();
   const { quest: q } = Route.useLoaderData();
+  const localized = localizeQuest(q, lang);
   const borderClass = RARITY_BORDER[q.rarity] ?? "border-[color:var(--border)]";
+  const rarityLabel =
+    q.rarity === "LEGENDARY"
+      ? t("rarity.legendaryQuest")
+      : q.rarity === "EPIC"
+      ? t("rarity.epicQuest")
+      : t("rarity.rareQuest");
 
   return (
     <main className="relative min-h-screen overflow-x-hidden text-arcade px-4 py-10">
@@ -57,7 +63,7 @@ function QuestPage() {
           hash="quests"
           className="text-pixel text-[10px] neon-cyan hover:neon-pink"
         >
-          ← BACK TO QUESTS
+          ← {t("quest.back")}
         </Link>
 
         {/* Hero card */}
@@ -65,28 +71,28 @@ function QuestPage() {
           className={`mt-6 relative arcade-border scanlines crt-vignette overflow-hidden rounded-md bg-[color:var(--card)] p-6 md:p-10 border-4 ${borderClass}`}
         >
           <p className={`text-pixel text-[10px] ${q.color} blink`}>
-            {RARITY_LABEL[q.rarity] ?? q.rarity}
+            {rarityLabel}
           </p>
           <h1 className={`mt-4 text-pixel text-2xl md:text-4xl ${q.color}`}>
-            {q.title}
+            {localized.title}
           </h1>
           <p className="mt-2 text-pixel text-[10px] text-muted-foreground">
-            {q.role}
+            {localized.role}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            {q.tags.map((t: string) => (
+            {q.tags.map((tag: string) => (
               <span
-                key={t}
+                key={tag}
                 className="text-pixel text-[9px] border border-[color:var(--neon-cyan)] px-2 py-1 neon-cyan"
               >
-                {t}
+                {tag}
               </span>
             ))}
           </div>
 
           <p className="mt-8 text-lg leading-relaxed text-foreground/90">
-            {q.longDesc}
+            {localized.longDesc}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -98,7 +104,7 @@ function QuestPage() {
                 className={`text-pixel text-xs px-6 py-4 text-[color:var(--primary-foreground)] shadow-[0_6px_0_0_rgba(0,0,0,0.6)] hover:translate-y-[2px] hover:shadow-[0_4px_0_0_rgba(0,0,0,0.6)] transition-transform bg-[color:var(--${q.color.replace("neon-", "neon-")})]`}
                 style={{ backgroundColor: `var(--${q.color.replace("neon-", "neon-")})` }}
               >
-                ▶ PLAY THE GAME
+                ▶ {t("quest.play")}
               </a>
             ) : null}
           </div>
@@ -106,8 +112,8 @@ function QuestPage() {
 
         {/* Video */}
         <section className="mt-12">
-          <p className={`text-pixel text-[10px] ${q.color}`}>★ GAMEPLAY ★</p>
-          <h2 className="mt-3 text-pixel text-xl md:text-2xl">VIDEO DEMO</h2>
+          <p className={`text-pixel text-[10px] ${q.color}`}>★ {t("quest.gameplay")} ★</p>
+          <h2 className="mt-3 text-pixel text-xl md:text-2xl">{t("quest.videoDemo")}</h2>
           <div
             className={`mt-6 aspect-video w-full overflow-hidden border-4 ${borderClass} bg-black`}
           >
@@ -115,37 +121,46 @@ function QuestPage() {
               <iframe
                 className="h-full w-full"
                 src={`https://www.youtube.com/embed/${q.youtubeId}`}
-                title={q.title}
+                title={localized.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-pixel text-[10px] text-muted-foreground p-6 text-center">
-                ⚠ AJOUTE L'ID DE TA VIDÉO YOUTUBE DANS src/lib/quests.ts (youtubeId)
-                <br />
-                Ex: pour https://youtu.be/ABC123 → "ABC123"
-              </div>
+                <div className="flex h-full w-full items-center justify-center text-pixel text-[10px] text-muted-foreground p-6 text-center">
+                  {t("quest.emptyVideo")}
+                  <br />
+                  {t("quest.emptyVideoExample")}
+                </div>
             )}
           </div>
         </section>
 
         {/* Other quests */}
         <section className="mt-16">
-          <p className="text-pixel text-[10px] neon-pink">★ NEXT QUESTS ★</p>
-          <h2 className="mt-3 text-pixel text-xl">CONTINUE THE ADVENTURE</h2>
+          <p className="text-pixel text-[10px] neon-pink">★ {t("quest.next")} ★</p>
+          <h2 className="mt-3 text-pixel text-xl">{t("quest.continue")}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {QUESTS.filter((o) => o.slug !== q.slug).map((o) => (
-              <Link
-                key={o.slug}
-                to="/quest/$slug"
-                params={{ slug: o.slug }}
-                className="flex flex-col border-2 border-[color:var(--border)] bg-[color:var(--card)] p-4 hover:border-[color:var(--neon-pink)] transition"
-              >
-                <span className={`text-pixel text-[9px] ${o.color}`}>{o.rarity}</span>
-                <span className={`mt-2 text-pixel text-sm ${o.color}`}>{o.title}</span>
-                <span className="mt-1 text-xs text-muted-foreground">{o.role}</span>
-              </Link>
-            ))}
+            {QUESTS.filter((o) => o.slug !== q.slug).map((o) => {
+              const ol = localizeQuest(o, lang);
+              const orLabel =
+                o.rarity === "LEGENDARY"
+                  ? t("rarity.legendaryQuest")
+                  : o.rarity === "EPIC"
+                  ? t("rarity.epicQuest")
+                  : t("rarity.rareQuest");
+              return (
+                <Link
+                  key={o.slug}
+                  to="/quest/$slug"
+                  params={{ slug: o.slug }}
+                  className="flex flex-col border-2 border-[color:var(--border)] bg-[color:var(--card)] p-4 hover:border-[color:var(--neon-pink)] transition"
+                >
+                  <span className={`text-pixel text-[9px] ${o.color}`}>{orLabel}</span>
+                  <span className={`mt-2 text-pixel text-sm ${o.color}`}>{ol.title}</span>
+                  <span className="mt-1 text-xs text-muted-foreground">{ol.role}</span>
+                </Link>
+              );
+            })}
           </div>
         </section>
       </div>
